@@ -1,0 +1,9 @@
+
+.dark-mode{
+  background-color: black;
+  color: white;
+}
+
+a.dark-mode:hover{ 
+  color: ghostwhite !important;
+}
