@@ -1,0 +1,108 @@
+{% extends 'main.html'%}
+
+{% block content %}
+<script>
+    let isHost = false
+</script>
+<div>
+    
+    <video  width="40%" height="30%" controls id="playervid" src={{vid.video}} crossorigin="anonymous">
+        <track label="rus" kind="subtitles" src="https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub-01.vtt" id="subtitleid">
+
+    </video>
+    <audio id="playeraud" src="https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn-01.mp3" muted>
+    </audio>
+
+</div>
+{% if request.user == vid.host %}
+    <script>
+        isHost = true
+    </script>
+{% endif %}
+<input type="text" id="silka" placeholder="silka na anime">
+<button onclick="PauseJs()">Pause</button>
+<button onclick="ChangeAudio()" id="CngAud">ChangeAudio</button>
+<script>
+    const playervidjs = document.getElementById('playervid')
+    const playersubjs = document.getElementById('subtitleid')
+    const playeraudjs = document.getElementById('playeraud')
+    const silkananime = document.getElementById('silka')
+    const audioanime = document.getElementById('CngAud')
+    silkananime.value = localStorage.getItem('silka')
+
+    silkananime.addEventListener('blur', () => {
+        fetch("{% url 'videosave' vid.pk%}",{
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ value: silkananime.value})
+        })
+    })
+    audioanime.addEventListener('click', () => {
+        const videoScr = playervidjs.src
+        const episode = videoScr.match(/-(\d+)\.mp4$/)[0].replace('.mp4', '')
+
+        const audioSrc = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn${episode}.mp3`
+        const subtitleSrc = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub${episode}.vtt`
+        playeraudjs.src = audioSrc
+        playersubjs.src= subtitleSrc
+
+    })
+    function ChangeAudio(){
+        playervidjs.muted = !playervidjs.muted
+        playeraudjs.muted = !playeraudjs.muted
+    }
+    function PauseJs(){
+        fetch("{% url 'pause' vid.pk%}",{
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'},
+        })
+    }
+    setInterval(() =>{
+        if (Math.abs(playeraudjs.currentTime - playervidjs.currentTime) > 0.2){
+            playeraudjs.currentTime = playervidjs.currentTime
+        }
+        if (isHost){
+            fetch("{% url 'timesave' vid.pk%}",{
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ value: playervidjs.currentTime})
+            })
+        }
+    },1000)
+    setInterval(() => {
+        if (!isHost){
+           fetch("{% url 'timereturn' vid.pk%}")
+            .then(res => res.json())
+            .then(data => {
+                playervidjs.currentTime = data.time
+                
+            }) 
+        }
+        
+    }, 10000)
+
+    setInterval(() => {
+        fetch("{% url 'pausereturn' vid.pk%}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.state){
+                    playeraudjs.pause()
+                    playervidjs.pause()
+                }else{
+                    if(!data.state){
+                        playervidjs.play()
+                        playeraudjs.play()
+                    }
+                    
+                }
+            })
+    }, 2000)
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>AnimeOnlime</title>
+    </head>
+    <body style="background-color: dimgrey;">
+        <a href="{% url 'createroom'%}">create room</a>
+        <a href="{% url 'roomjoin'%}">join room</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'logout'%}">logout</a>
+        {% else %}
+            <a href="{% url 'login'%}">login</a>
+            <a href="{% url 'register'%}">register</a>
+        {% endif %}
+        {% block content %}
+
+        {% endblock %}
+    </body>
+</html>
