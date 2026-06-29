@@ -88,13 +88,15 @@
                     
                 }
             })
-    },1000)
+    },500)
     setInterval(() => {
         if (!isHost){
            fetch("{% url 'timereturn' vid.pk%}")
             .then(res => res.json())
             .then(data => {
-                playervidjs.currentTime = data.time
+                if (Math.abs(playervidjs.currentTime - data.time) > 1){
+                    playeraudjs.currentTime = data.time
+                }
                 
             }) 
         }
