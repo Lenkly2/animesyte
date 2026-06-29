@@ -74,20 +74,6 @@
                 body: JSON.stringify({ value: playervidjs.currentTime})
             })
         }
-    },1000)
-    setInterval(() => {
-        if (!isHost){
-           fetch("{% url 'timereturn' vid.pk%}")
-            .then(res => res.json())
-            .then(data => {
-                playervidjs.currentTime = data.time
-                
-            }) 
-        }
-        
-    }, 10000)
-
-    setInterval(() => {
         fetch("{% url 'pausereturn' vid.pk%}")
             .then(res => res.json())
             .then(data => {
@@ -102,6 +88,18 @@
                     
                 }
             })
-    }, 2000)
+    },1000)
+    setInterval(() => {
+        if (!isHost){
+           fetch("{% url 'timereturn' vid.pk%}")
+            .then(res => res.json())
+            .then(data => {
+                playervidjs.currentTime = data.time
+                
+            }) 
+        }
+        
+    }, 10000)
+
 </script>
 {% endblock %}
