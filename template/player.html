@@ -5,7 +5,7 @@
     let isHost = false
 </script>
 <div>
-    <video  width="40%" height="30%" controls id="playervid" src={{vid.video}}  onpause="PauseJs()" onplay="PauseJs()" crossorigin="anonymous">
+    <video  width="40%" height="30%" controls id="playervid" src={{vid.video}} crossorigin="anonymous">
         <track label="rus" kind="subtitles" src="" id="subtitleid">
     </video>
     <audio id="playeraud" src="" muted >
@@ -47,7 +47,7 @@
                 playervidjs.pause()
             }else{
                 playervidjs.play()
-                playeraudjs.play()                   
+                playeraudjs.play()           
             }
         }
         
@@ -81,12 +81,12 @@
         playervidjs.muted = !playervidjs.muted
         playeraudjs.muted = !playeraudjs.muted
     }
-    function PauseJs(){
+    setInterval(() =>{
         playerSocket.send(JSON.stringify({
             "paused": playervidjs.paused,
             "time":playervidjs.currentTime
         }))
-    }
+    })
     setInterval(() =>{
         if (Math.abs(playeraudjs.currentTime - playervidjs.currentTime) > 0.3){
             playeraudjs.currentTime = playervidjs.currentTime
