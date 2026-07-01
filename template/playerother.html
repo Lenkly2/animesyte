@@ -12,6 +12,9 @@
     </video>
     <audio id="playeraud" src="" muted>
     </audio>
+    <iframe src="{{vid.video}}">
+
+    </iframe>
 
 </div>
 {% if request.user == vid.host %}
@@ -19,7 +22,10 @@
         isHost = true
     </script>
 {% endif %}
-<input type="text" id="silka" placeholder="link on anime">
+<form>
+    <input type="text" id="silka" placeholder="link on anime">
+</form>
+
 <button onclick="PauseJs()">Pause</button>
 <button onclick="ChangeAudio()" id="CngAud">ChangeAudio</button>
 <script>
@@ -29,26 +35,27 @@
     const playersubjs = document.getElementById('subtitleid')
     const playeraudjs = document.getElementById('playeraud')
     const silkananime = document.getElementById('silka')
-    const audioanime = document.getElementById('CngAud')
+    // const audioanime = document.getElementById('CngAud')
     silkananime.value = localStorage.getItem('silka')
 
     playerSocket.onmessage = function(e){
         let data = JSON.parse(e.data)
-        if (Math.abs(playervidjs.currentTime - data["time"]) > 1){
-            playervidjs.currentTime = data["time"]
-        }
-        if (data["paused"]){
-            if (!playervidjs.paused){
-                playeraudjs.pause()
-                playervidjs.pause()
+        if (!isHost){
+            if (Math.abs(playervidjs.currentTime - data["time"]) > 2){
+                playervidjs.currentTime = data["time"]
             }
+        }
+
+        if (data["paused"]){
+            playeraudjs.pause()
+            playervidjs.pause()
+
                     
         }else{
             if(!data["paused"]){
-                if (playervidjs.paused){
-                    playervidjs.play()
-                    playeraudjs.play()
-                }
+                playervidjs.play()
+                playeraudjs.play()
+
                         
             }
                     
@@ -56,7 +63,7 @@
         console.log('data',data)
     }
 
-    silkananime.addEventListener('blur', () => {
+    silkananime.addEventListener('submit', () => {
         fetch("{% url 'videosave' vid.pk%}",{
             method: 'POST',
             headers: {
@@ -67,20 +74,20 @@
         })
     })
 
-    audioanime.addEventListener('click', () => {
-        const videoScr = playervidjs.src
-        const episode = videoScr.match(/-(\d+)\.mp4$/)[0].replace('.mp4', '')
+    // audioanime.addEventListener('click', () => {
+    //     const videoScr = playervidjs.src
+    //     const episode = videoScr.match(/-(\d+)\.mp4$/)[0].replace('.mp4', '')
 
-        const audioSrc = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn${episode}.mp3`
-        const subtitleSrc = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub${episode}.vtt`
-        playeraudjs.src = audioSrc
-        playersubjs.src= subtitleSrc
+    //     const audioSrc = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn${episode}.mp3`
+    //     const subtitleSrc = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub${episode}.vtt`
+    //     playeraudjs.src = audioSrc
+    //     playersubjs.src= subtitleSrc
 
-    })
-    function ChangeAudio(){
-        playervidjs.muted = !playervidjs.muted
-        playeraudjs.muted = !playeraudjs.muted
-    }
+    // })
+    // function ChangeAudio(){
+    //     playervidjs.muted = !playervidjs.muted
+    //     playeraudjs.muted = !playeraudjs.muted
+    // }
     function PauseJs(){
         playerSocket.send(JSON.stringify({
             "paused": playervidjs.paused

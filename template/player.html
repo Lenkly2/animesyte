@@ -5,13 +5,11 @@
     let isHost = false
 </script>
 <div>
-    
-    <video  width="40%" height="30%" controls id="playervid" src={{vid.video}}  onpause="PauseJs()" onplay="PauseJs()">
+    <video  width="40%" height="30%" controls id="playervid" src={{vid.video}}  onpause="PauseJs()" onplay="PauseJs()" crossorigin="anonymous">
         <track label="rus" kind="subtitles" src="" id="subtitleid">
     </video>
-    <audio id="playeraud" src="" muted>
+    <audio id="playeraud" src="" muted >
     </audio>
-
 </div>
 {% if request.user == vid.host %}
     <script>
@@ -36,31 +34,29 @@
     const linkonanime = document.getElementById('silka')
     const audioanime = document.getElementById('CngAud')
     linkonanime.value = localStorage.getItem('silka')
+
     playerSocket.onmessage = function(e){
         let data = JSON.parse(e.data)
         if (!isHost){
-            if (Math.abs(playervidjs.currentTime - data["time"]) > 1){
+            if (Math.abs(playervidjs.currentTime - data["time"]) > 2){
                 playervidjs.currentTime = data["time"]
             }
         }
         
         if (data["paused"]){
-            if (!playervidjs.paused){
-                playeraudjs.pause()
-                playervidjs.pause()
-            }
+            playeraudjs.pause()
+            playervidjs.pause()
                     
         }else{
             if(!data["paused"]){
-                if (playervidjs.paused){
-                    playervidjs.play()
-                    playeraudjs.play()
-                }
+                playervidjs.play()
+                playeraudjs.play()
                         
             }
                     
         }
     }
+
     linkonanime.addEventListener('submit', () => {
         fetch("{% url 'videosave' vid.pk%}",{
             method: 'POST',
@@ -71,6 +67,7 @@
             body: JSON.stringify({ value: linkonanime.value})
         })
     })
+
     audioanime.addEventListener('click', () => {
         const videoScr = playervidjs.src
         const episode = videoScr.match(/-(\d+)\.mp4$/)[0].replace('.mp4', '')
