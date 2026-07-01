@@ -86,7 +86,7 @@
             "paused": playervidjs.paused,
             "time":playervidjs.currentTime
         }))
-    })
+    },2000)
     setInterval(() =>{
         if (Math.abs(playeraudjs.currentTime - playervidjs.currentTime) > 0.3){
             playeraudjs.currentTime = playervidjs.currentTime
