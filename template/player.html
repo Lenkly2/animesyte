@@ -36,22 +36,21 @@
 
     playerSocket.onmessage = function(e){
         let data = JSON.parse(e.data)
-        if (!isHost){
+        if (!isHost && data["time"] !== undefined){
             if (Math.abs(playervidjs.currentTime - data["time"]) > 3){
                 playervidjs.currentTime = data["time"]
             }
         }
-        
-        if (data["paused"]){
-            playeraudjs.pause()
-            playervidjs.pause()
-                    
-        }else{
-
-            playervidjs.play()
-            playeraudjs.play()            
-                       
+        if (data["pause"] !== undefined){
+            if (data["paused"]){
+                playeraudjs.pause()
+                playervidjs.pause()
+            }else{
+                playervidjs.play()
+                playeraudjs.play()                   
+            }
         }
+        
     }
 
     linkonanime.addEventListener('submit', (e) => {
