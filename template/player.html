@@ -17,8 +17,8 @@
     </script>
 {% endif %}
 <div style="display: flex;">
-    <form>
-        <input type="text" id="silka" placeholder="link on anime">
+    <form id="silka">
+        <input type="text" placeholder="link on anime" name="inputsilka">
     </form>
 
     <button onclick="ChangeAudio()" id="CngAud">ChangeAudio</button>
@@ -54,7 +54,8 @@
         }
     }
 
-    linkonanime.addEventListener('submit', () => {
+    linkonanime.addEventListener('submit', (e) => {
+        e.preventDefault()
         fetch("{% url 'videosave' vid.pk%}",{
             method: 'POST',
             headers: {
