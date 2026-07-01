@@ -38,7 +38,7 @@
     playerSocket.onmessage = function(e){
         let data = JSON.parse(e.data)
         if (!isHost){
-            if (Math.abs(playervidjs.currentTime - data["time"]) > 2){
+            if (Math.abs(playervidjs.currentTime - data["time"]) > 3){
                 playervidjs.currentTime = data["time"]
             }
         }
@@ -48,11 +48,11 @@
             playervidjs.pause()
                     
         }else{
-            if(!data["paused"]){
-                playervidjs.play()
-                playeraudjs.play()
+
+            playervidjs.play()
+            playeraudjs.play()
                         
-            }
+            
                     
         }
     }
@@ -68,7 +68,7 @@
         })
     })
 
-    audioanime.addEventListener('click', () => {
+    playervidjs.addEventListener('loadeddata', () => {
         const videoScr = playervidjs.src
         const episode = videoScr.match(/-(\d+)\.mp4$/)[0].replace('.mp4', '')
 
@@ -76,22 +76,24 @@
         const subtitleSrc = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub${episode}.vtt`
         playeraudjs.src = audioSrc
         playersubjs.src= subtitleSrc
-        
+        playeraudjs.currentTime = playervidjs.currentTime
     })
+
     function ChangeAudio(){
         playervidjs.muted = !playervidjs.muted
         playeraudjs.muted = !playeraudjs.muted
     }
     function PauseJs(){
         playerSocket.send(JSON.stringify({
-            "paused": playervidjs.paused
+            "paused": playervidjs.paused,
+            "time":playervidjs.currentTime
         }))
     }
     setInterval(() =>{
         if (Math.abs(playeraudjs.currentTime - playervidjs.currentTime) > 0.2){
             playeraudjs.currentTime = playervidjs.currentTime
         }
-        if (isHost){
+        if (isHost && !playervidjs.paused){
             playerSocket.send(JSON.stringify({
                 "time":playervidjs.currentTime
             }))
