@@ -31,16 +31,18 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'channels',
-    # 'rest_framework',
     'main',
 ]
+    # 'rest_framework',
+    
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,8 +72,9 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'AnimeOnline.asgi.application'
 WSGI_APPLICATION = 'AnimeOnline.wsgi.application'
-# ASGI_APPLICATION = 'AnimeOnline.asgi.application'
+
 
 
 # Database
@@ -84,6 +87,13 @@ WSGI_APPLICATION = 'AnimeOnline.wsgi.application'
 #         },
 #     },
 # }
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+
+    },
+}
+
 
 DATABASES = {
     'default': {

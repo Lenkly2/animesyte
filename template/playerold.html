@@ -7,10 +7,10 @@
 <div>
     
     <video  width="40%" height="30%" controls id="playervid" src={{vid.video}} crossorigin="anonymous">
-        <track label="rus" kind="subtitles" src="https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub-01.vtt" id="subtitleid">
+        <track label="rus" kind="subtitles" src="" id="subtitleid">
 
     </video>
-    <audio id="playeraud" src="https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn-01.mp3" muted>
+    <audio id="playeraud" src="" muted>
     </audio>
 
 </div>
@@ -81,8 +81,9 @@
            fetch("{% url 'timereturn' vid.pk%}")
             .then(res => res.json())
             .then(data => {
-                playervidjs.currentTime = data.time
-                
+                if (Math.abs(playervidjs.currentTime - data.time) > 1){
+                   playervidjs.currentTime = data.time
+                }
             }) 
         }
         
@@ -93,12 +94,16 @@
             .then(res => res.json())
             .then(data => {
                 if (data.state){
-                    playeraudjs.pause()
-                    playervidjs.pause()
+                    if (!playervidjs.paused){
+                        playeraudjs.pause()
+                        playervidjs.pause()
+                    }
                 }else{
                     if(!data.state){
-                        playervidjs.play()
-                        playeraudjs.play()
+                        if (playervidjs.paused){
+                            playervidjs.play()
+                            playeraudjs.play()
+                        }
                     }
                     
                 }

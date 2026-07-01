@@ -6,11 +6,10 @@
 </script>
 <div>
     
-    <video  width="40%" height="30%" controls id="playervid" src={{vid.video}} crossorigin="anonymous" onpause="PauseJs()">
-        <track label="rus" kind="subtitles" src="https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub-01.vtt" id="subtitleid">
-
+    <video  width="40%" height="30%" controls id="playervid" src={{vid.video}}  onpause="PauseJs()" onplay="PauseJs()">
+        <track label="rus" kind="subtitles" src="" id="subtitleid">
     </video>
-    <audio id="playeraud" src="https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn-01.mp3" muted>
+    <audio id="playeraud" src="" muted>
     </audio>
 
 </div>
@@ -19,24 +18,34 @@
         isHost = true
     </script>
 {% endif %}
-<input type="text" id="silka" placeholder="silka na anime">
+<input type="text" id="silka" placeholder="link on anime">
 <button onclick="ChangeAudio()" id="CngAud">ChangeAudio</button>
 <script>
+    let roomID = "{{vid.pk}}"
+    let url = `ws://${window.location.host}/ws/socket-server/${roomID}/`
+    const playerSocket = new WebSocket(url)
     const playervidjs = document.getElementById('playervid')
     const playersubjs = document.getElementById('subtitleid')
     const playeraudjs = document.getElementById('playeraud')
-    const silkananime = document.getElementById('silka')
+    const linkonanime = document.getElementById('silka')
     const audioanime = document.getElementById('CngAud')
-    silkananime.value = localStorage.getItem('silka')
+    linkonanime.value = localStorage.getItem('silka')
 
-    silkananime.addEventListener('blur', () => {
+    playerSocket.onmessage = function(e){
+        let data = JSON.parse(e.data)
+        if (Math.abs(playervidjs.currentTime - data["time"]) > 1){
+            playervidjs.currentTime = data["time"]
+        }
+        console.log('data',data)
+    }
+    linkonanime.addEventListener('blur', () => {
         fetch("{% url 'videosave' vid.pk%}",{
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ value: silkananime.value})
+            body: JSON.stringify({ value: linkonanime.value})
         })
     })
     audioanime.addEventListener('click', () => {
@@ -47,61 +56,74 @@
         const subtitleSrc = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub${episode}.vtt`
         playeraudjs.src = audioSrc
         playersubjs.src= subtitleSrc
-
+        
     })
     function ChangeAudio(){
         playervidjs.muted = !playervidjs.muted
         playeraudjs.muted = !playeraudjs.muted
     }
     function PauseJs(){
-        fetch("{% url 'pause' vid.pk%}",{
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'},
-        })
+        // fetch("{% url 'pause' vid.pk%}",{
+        //     method: 'POST',
+        //     headers: {
+        //         'X-CSRFToken': '{{ csrf_token }}'},
+        // })
+        playerSocket.send(JSON.stringify({
+            "paused": playervidjs.paused
+        }))
     }
     setInterval(() =>{
         if (Math.abs(playeraudjs.currentTime - playervidjs.currentTime) > 0.2){
             playeraudjs.currentTime = playervidjs.currentTime
         }
         if (isHost){
-            fetch("{% url 'timesave' vid.pk%}",{
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ value: playervidjs.currentTime})
-            })
+            // fetch("{% url 'timesave' vid.pk%}",{
+            //     method: 'POST',
+            //     headers: {
+            //         'X-CSRFToken': '{{ csrf_token }}',
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify({ value: playervidjs.currentTime})
+            // })
+            playerSocket.send(JSON.stringify({
+                "time":playervidjs.currentTime
+            }))
+
         }
-        fetch("{% url 'pausereturn' vid.pk%}")
-            .then(res => res.json())
-            .then(data => {
-                if (data.state){
-                    playeraudjs.pause()
-                    playervidjs.pause()
-                }else{
-                    if(!data.state){
-                        playervidjs.play()
-                        playeraudjs.play()
-                    }
+        // fetch("{% url 'pausereturn' vid.pk%}")
+        //     .then(res => res.json())
+        //     .then(data => {
+        //         if (data.state){
+        //             if (!playervidjs.paused){
+        //                 playeraudjs.pause()
+        //                 playervidjs.pause()
+        //             }
                     
-                }
-            })
+        //         }else{
+        //             if(!data.state){
+        //                 if (playervidjs.paused){
+        //                     playervidjs.play()
+        //                     playeraudjs.play()
+        //                 }
+                        
+        //             }
+                    
+        //         }
+        //     })
     },500)
-    setInterval(() => {
-        if (!isHost){
-           fetch("{% url 'timereturn' vid.pk%}")
-            .then(res => res.json())
-            .then(data => {
-                if (Math.abs(playervidjs.currentTime - data.time) > 1){
-                    playervidjs.currentTime = data.time
-                }
+    // setInterval(() => {
+    //     if (!isHost){
+    //        fetch("{% url 'timereturn' vid.pk%}")
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             if (Math.abs(playervidjs.currentTime - data.time) > 1){
+    //                 playervidjs.currentTime = data.time
+    //             }
                 
-            }) 
-        }
+    //         }) 
+    //     }
         
-    }, 10000)
+    // }, 10000)
 
 </script>
 {% endblock %}
