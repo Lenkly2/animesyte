@@ -7,23 +7,24 @@ For more information on this file, see
 https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
 """
 
+
+
 import os
-import django
-
-
+# import django
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-import main.routing
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AnimeOnline.settings')
+djangoapp = get_asgi_application()
+import main.routing
+# from main import routing
 # django.setup()
 
-# from main import routing
-# application = get_asgi_application()
 
 application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
+    "http": djangoapp,
     "websocket": AuthMiddlewareStack(
         URLRouter(
             main.routing.websocket_urlpatterns
