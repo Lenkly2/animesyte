@@ -18,8 +18,14 @@
         isHost = true
     </script>
 {% endif %}
-<input type="text" id="silka" placeholder="link on anime">
-<button onclick="ChangeAudio()" id="CngAud">ChangeAudio</button>
+<div style="display: flex;">
+    <form>
+        <input type="text" id="silka" placeholder="link on anime">
+    </form>
+
+    <button onclick="ChangeAudio()" id="CngAud">ChangeAudio</button>
+</div>
+
 <script>
     let roomID = "{{vid.pk}}"
     let url = `ws://${window.location.host}/ws/socket-server/${roomID}/`
@@ -30,15 +36,32 @@
     const linkonanime = document.getElementById('silka')
     const audioanime = document.getElementById('CngAud')
     linkonanime.value = localStorage.getItem('silka')
-
     playerSocket.onmessage = function(e){
         let data = JSON.parse(e.data)
-        if (Math.abs(playervidjs.currentTime - data["time"]) > 1){
-            playervidjs.currentTime = data["time"]
+        if (!isHost){
+            if (Math.abs(playervidjs.currentTime - data["time"]) > 1){
+                playervidjs.currentTime = data["time"]
+            }
         }
-        console.log('data',data)
+        
+        if (data["paused"]){
+            if (!playervidjs.paused){
+                playeraudjs.pause()
+                playervidjs.pause()
+            }
+                    
+        }else{
+            if(!data["paused"]){
+                if (playervidjs.paused){
+                    playervidjs.play()
+                    playeraudjs.play()
+                }
+                        
+            }
+                    
+        }
     }
-    linkonanime.addEventListener('blur', () => {
+    linkonanime.addEventListener('submit', () => {
         fetch("{% url 'videosave' vid.pk%}",{
             method: 'POST',
             headers: {
@@ -63,11 +86,6 @@
         playeraudjs.muted = !playeraudjs.muted
     }
     function PauseJs(){
-        // fetch("{% url 'pause' vid.pk%}",{
-        //     method: 'POST',
-        //     headers: {
-        //         'X-CSRFToken': '{{ csrf_token }}'},
-        // })
         playerSocket.send(JSON.stringify({
             "paused": playervidjs.paused
         }))
@@ -77,53 +95,12 @@
             playeraudjs.currentTime = playervidjs.currentTime
         }
         if (isHost){
-            // fetch("{% url 'timesave' vid.pk%}",{
-            //     method: 'POST',
-            //     headers: {
-            //         'X-CSRFToken': '{{ csrf_token }}',
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: JSON.stringify({ value: playervidjs.currentTime})
-            // })
             playerSocket.send(JSON.stringify({
                 "time":playervidjs.currentTime
             }))
 
         }
-        // fetch("{% url 'pausereturn' vid.pk%}")
-        //     .then(res => res.json())
-        //     .then(data => {
-        //         if (data.state){
-        //             if (!playervidjs.paused){
-        //                 playeraudjs.pause()
-        //                 playervidjs.pause()
-        //             }
-                    
-        //         }else{
-        //             if(!data.state){
-        //                 if (playervidjs.paused){
-        //                     playervidjs.play()
-        //                     playeraudjs.play()
-        //                 }
-                        
-        //             }
-                    
-        //         }
-        //     })
     },500)
-    // setInterval(() => {
-    //     if (!isHost){
-    //        fetch("{% url 'timereturn' vid.pk%}")
-    //         .then(res => res.json())
-    //         .then(data => {
-    //             if (Math.abs(playervidjs.currentTime - data.time) > 1){
-    //                 playervidjs.currentTime = data.time
-    //             }
-                
-    //         }) 
-    //     }
-        
-    // }, 10000)
 
 </script>
 {% endblock %}

@@ -8,6 +8,3 @@ class Room(models.Model):
     id = models.CharField(primary_key=True,max_length=90)
     password = models.CharField(null=True,blank=True)
     video = models.CharField(null=True,blank=True)
-
-    state = models.BooleanField(default=0,null=True,blank=True)
-    time = models.FloatField(default=0,null=True,blank=True) 

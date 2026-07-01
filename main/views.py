@@ -63,33 +63,9 @@ class UserLogoutView(LogoutView):
     ...
 
 
-def PauseView(request,pk):
-    room = Room.objects.get(pk=pk) 
-    if room.state == 0:
-        room.state = 1
-    else:
-        room.state = 0
-    room.save()
-    return JsonResponse({})
-
 def VideoSaveView(request,pk):
     room = Room.objects.get(pk=pk) 
     data = json.loads(request.body)
     room.video = data['value']
-    room.save()
-    return JsonResponse({})
-
-def PauseReturnView(request,pk):
-    room = Room.objects.get(pk=pk) 
-    return JsonResponse({'state': room.state})
-
-def TimeReturnView(request,pk):
-    room = Room.objects.get(pk=pk) 
-    return JsonResponse({'time': room.time})
-
-def TimeSaveView(request,pk):
-    room = Room.objects.get(pk=pk) 
-    data = json.loads(request.body)
-    room.time = data['value']
     room.save()
     return JsonResponse({})
