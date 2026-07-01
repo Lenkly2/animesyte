@@ -26,7 +26,8 @@
 
 <script>
     let roomID = "{{vid.pk}}"
-    let url = `ws://${window.location.host}/ws/socket-server/${roomID}/`
+    let protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+    let url = `${protocol}://${window.location.host}/ws/socket-server/${roomID}/`
     const playerSocket = new WebSocket(url)
     const playervidjs = document.getElementById('playervid')
     const playersubjs = document.getElementById('subtitleid')
