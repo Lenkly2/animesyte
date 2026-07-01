@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main',
 ]
-    # 'rest_framework',
+
     
 
 MIDDLEWARE = [
@@ -103,6 +103,9 @@ DATABASES = {
 }
 
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://animesyte.onrender.com",
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
