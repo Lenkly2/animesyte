@@ -32,7 +32,6 @@
     const playersubjs = document.getElementById('subtitleid')
     const playeraudjs = document.getElementById('playeraud')
     const linkonanime = document.getElementById('silka')
-    linkonanime.value = localStorage.getItem('silka')
 
     playerSocket.onmessage = function(e){
         let data = JSON.parse(e.data)
@@ -56,14 +55,16 @@
 
     linkonanime.addEventListener('submit', (e) => {
         e.preventDefault()
+        let silkavalue = e.target.inputsilka.value
         fetch("{% url 'videosave' vid.pk%}",{
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ value: linkonanime.value})
+            body: JSON.stringify({ value: silkavalue})
         })
+        linkonanime.reset()
     })
 
     playervidjs.addEventListener('loadeddata', () => {
