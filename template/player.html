@@ -92,6 +92,12 @@
                 if (playeraudjs.paused) playeraudjs.play().catch(e => console.log(e))     
             }
         }
+        if (data["episode"] !== undefined){
+            var epnum = data["episode"];
+            playervidjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1-${epnum}.mp4`
+            playeraudjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn-${epnum}.mp3`
+            playersubjs.src= `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub-${epnum}.vtt`
+        }
         enablePlayerListeners();
         
     }
@@ -114,6 +120,12 @@
         playervidjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1-${epnum}.mp4`
         playeraudjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn-${epnum}.mp3`
         playersubjs.src= `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub-${epnum}.vtt`
+        if (isHost){
+            playerSocket.send(JSON.stringify({
+                "episode":epnum
+            }))
+
+        }
 
     }
     playervidjs.addEventListener('loadeddata', () => {

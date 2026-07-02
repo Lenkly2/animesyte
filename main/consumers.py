@@ -13,7 +13,7 @@ class PlayerConsumer(WebsocketConsumer):
         )
         self.accept()
 
-        state = ROOMS_STATE.get(self.room_id, {"paused":False,"time":0})
+        state = ROOMS_STATE.get(self.room_id, {"paused":False,"time":0,"episode":0})
         self.send(text_data=json.dumps({
             "type":"sync",
             **state
@@ -26,12 +26,14 @@ class PlayerConsumer(WebsocketConsumer):
     
     def receive(self, text_data):
         data = json.loads(text_data)
-        current = ROOMS_STATE.get(self.room_id, {"paused":False,"time":0})
+        current = ROOMS_STATE.get(self.room_id, {"paused":False,"time":0,"episode":0})
 
         if "paused" in data:
             current["paused"] = data["paused"]
         if "time" in data:
             current["time"] = data["time"]
+        if "episode" in data:
+            current["episode"] = data["episode"]
 
         ROOMS_STATE[self.room_id]= current
 
@@ -41,6 +43,7 @@ class PlayerConsumer(WebsocketConsumer):
                 "type": "player_update",
                 "paused": current["paused"],
                 "time": current["time"],
+                "episode": current["episode"],
             }
         )
 
@@ -54,4 +57,5 @@ class PlayerConsumer(WebsocketConsumer):
             "type":"sync",
             "paused":event['paused'],
             "time":event["time"],
+            "episode":event["episode"],
         }))
