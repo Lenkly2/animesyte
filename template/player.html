@@ -24,15 +24,15 @@
     <button onclick="ChangeAudio()" id="CngAud">ChangeAudio</button>
 
     <select id="episodenumber" onchange="EpisodeChange()">
-        <option value="01">1</option>
-        <option value="02">2</option>
-        <option value="03">3</option>
-        <option value="04">4</option>
-        <option value="05">5</option>
-        <option value="06">6</option>
-        <option value="07">7</option>
-        <option value="08">8</option>
-        <option value="09">9</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
         <option value="10">10</option>
         <option value="11">11</option>
         <option value="12">12</option>
@@ -53,29 +53,28 @@
     function onUserPause() {
         if (!playeraudjs.paused) playeraudjs.pause();
         playerSocket.send(JSON.stringify({ "paused": true }));
+        disablePlayerListeners();
     }
 
     function onUserPlay() {
         if (playeraudjs.paused) playeraudjs.play().catch(e => console.log(e));
         playerSocket.send(JSON.stringify({ "paused": false }));
+        disablePlayerListeners();
     }
 
-    // Включаем отслеживание действий пользователя со старта
     function enablePlayerListeners() {
         playervidjs.addEventListener('pause', onUserPause);
         playervidjs.addEventListener('play', onUserPlay);
     }
 
-    // Выключаем отслеживание, чтобы сокет сам себя не блокировал
     function disablePlayerListeners() {
         playervidjs.removeEventListener('pause', onUserPause);
         playervidjs.removeEventListener('play', onUserPlay);
     }
     enablePlayerListeners();
-
+    
     playerSocket.onmessage = function(e){
         let data = JSON.parse(e.data)
-        disablePlayerListeners();
 
         if (!isHost && data["time"] !== undefined){
             if (Math.abs(playervidjs.currentTime - data["time"]) > 3){
@@ -91,6 +90,7 @@
                 if (playervidjs.paused) playervidjs.play().catch(e => console.log(e))
                 if (playeraudjs.paused) playeraudjs.play().catch(e => console.log(e))     
             }
+            enablePlayerListeners();
         }
         if (data["episode"] !== undefined){
             var epnum = data["episode"];
@@ -98,7 +98,7 @@
             playeraudjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn-${epnum}.mp3`
             playersubjs.src= `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub-${epnum}.vtt`
         }
-        enablePlayerListeners();
+        
         
     }
 
@@ -117,15 +117,14 @@
     // })
     function EpisodeChange(){
         var epnum = episodenumberjs.value;
-        playervidjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1-${epnum}.mp4`
-        playeraudjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn-${epnum}.mp3`
-        playersubjs.src= `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub-${epnum}.vtt`
-        if (isHost){
-            playerSocket.send(JSON.stringify({
-                "episode":epnum
-            }))
+        playerSocket.send(JSON.stringify({
+            "episode":epnum
+        }))
+        // playervidjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1-${epnum}.mp4`
+        // playeraudjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn-${epnum}.mp3`
+        // playersubjs.src= `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub-${epnum}.vtt`
 
-        }
+
 
     }
     playervidjs.addEventListener('loadeddata', () => {
