@@ -17,11 +17,26 @@
     </script>
 {% endif %}
 <div style="display: flex;">
-    <form id="silka">
-        <input type="text" placeholder="link on anime" name="inputsilka">
-    </form>
+    <!-- <form id="formlink">
+        <input type="text" placeholder="link on anime" name="inputlink">
+    </form> -->
 
     <button onclick="ChangeAudio()" id="CngAud">ChangeAudio</button>
+
+    <select id="episodenumber" onchange="EpisodeChange()">
+        <option value="01">1</option>
+        <option value="02">2</option>
+        <option value="03">3</option>
+        <option value="04">4</option>
+        <option value="05">5</option>
+        <option value="06">6</option>
+        <option value="07">7</option>
+        <option value="08">8</option>
+        <option value="09">9</option>
+        <option value="10">10</option>
+        <option value="11">11</option>
+        <option value="12">12</option>
+    </select>
 </div>
 
 <script>
@@ -32,41 +47,75 @@
     const playervidjs = document.getElementById('playervid')
     const playersubjs = document.getElementById('subtitleid')
     const playeraudjs = document.getElementById('playeraud')
-    const linkonanime = document.getElementById('silka')
+    // const linkonanime = document.getElementById('formlink')
+    const episodenumberjs = document.getElementById('episodenumber')
+
+    function onUserPause() {
+        if (!playeraudjs.paused) playeraudjs.pause();
+        playerSocket.send(JSON.stringify({ "paused": true }));
+    }
+
+    function onUserPlay() {
+        if (playeraudjs.paused) playeraudjs.play().catch(e => console.log(e));
+        playerSocket.send(JSON.stringify({ "paused": false }));
+    }
+
+    // Включаем отслеживание действий пользователя со старта
+    function enablePlayerListeners() {
+        playervidjs.addEventListener('pause', onUserPause);
+        playervidjs.addEventListener('play', onUserPlay);
+    }
+
+    // Выключаем отслеживание, чтобы сокет сам себя не блокировал
+    function disablePlayerListeners() {
+        playervidjs.removeEventListener('pause', onUserPause);
+        playervidjs.removeEventListener('play', onUserPlay);
+    }
+    enablePlayerListeners();
 
     playerSocket.onmessage = function(e){
         let data = JSON.parse(e.data)
+        disablePlayerListeners();
+
         if (!isHost && data["time"] !== undefined){
             if (Math.abs(playervidjs.currentTime - data["time"]) > 3){
                 playervidjs.currentTime = data["time"]
             }
         }
+        
         if (data["paused"] !== undefined){
             if (data["paused"]){
-                playeraudjs.pause()
-                playervidjs.pause()
+                if (!playervidjs.paused) playervidjs.pause()
+                if (!playeraudjs.paused) playeraudjs.pause()
             }else{
-                playervidjs.play()
-                playeraudjs.play()           
+                if (playervidjs.paused) playervidjs.play().catch(e => console.log(e))
+                if (playeraudjs.paused) playeraudjs.play().catch(e => console.log(e))     
             }
         }
+        enablePlayerListeners();
         
     }
 
-    linkonanime.addEventListener('submit', (e) => {
-        e.preventDefault()
-        let silkavalue = e.target.inputsilka.value
-        fetch("{% url 'videosave' vid.pk%}",{
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ value: silkavalue})
-        })
-        linkonanime.reset()
-    })
+    // linkonanime.addEventListener('submit', (e) => {
+    //     e.preventDefault()
+    //     let linkvalue = e.target.inputlink.value
+    //     fetch("{% url 'videosave' vid.pk%}",{
+    //         method: 'POST',
+    //         headers: {
+    //             'X-CSRFToken': '{{ csrf_token }}',
+    //             'Content-Type': 'application/json'
+    //         },
+    //         body: JSON.stringify({ value: linkvalue})
+    //     })
+    //     linkonanime.reset()
+    // })
+    function EpisodeChange(){
+        var epnum = episodenumberjs.value;
+        playervidjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1-${epnum}.mp4`
+        playeraudjs.src = `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/re-zero-s2c1AuAn-${epnum}.mp3`
+        playersubjs.src= `https://pub-aa9dae099bd44861843faecfb2e87b3d.r2.dev/rezero-s2c1sub-${epnum}.vtt`
 
+    }
     playervidjs.addEventListener('loadeddata', () => {
         
         const videoScr = playervidjs.src
@@ -81,24 +130,18 @@
         playervidjs.muted = !playervidjs.muted
         playeraudjs.muted = !playeraudjs.muted
     }
-    setInterval(() =>{
-        playerSocket.send(JSON.stringify({
-            "paused": playervidjs.paused,
-            "time":playervidjs.currentTime
-        }))
-    },2000)
+
     setInterval(() =>{
         if (Math.abs(playeraudjs.currentTime - playervidjs.currentTime) > 0.3){
             playeraudjs.currentTime = playervidjs.currentTime
         }
         if (isHost && !playervidjs.paused){
             playerSocket.send(JSON.stringify({
-                "paused": false,
                 "time":playervidjs.currentTime
             }))
 
         }
-    },500)
+    },1000)
 
 </script>
 {% endblock %}

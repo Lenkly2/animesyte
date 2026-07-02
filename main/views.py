@@ -1,12 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404,redirect
 from django.views.generic import TemplateView,FormView,CreateView,ListView,DeleteView,UpdateView,DetailView
 from django.contrib.auth.views import LogoutView, LoginView
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy,reverse
-from django.shortcuts import get_object_or_404,redirect
 from .forms import RoomSearchForm
 from .models import Room
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotAllowed
 import json
 # Create your views here.
 
@@ -20,9 +19,14 @@ class RoomSearchView(FormView):
 
     def form_valid(self, form):
         room_id = form.cleaned_data['id']
+        room_password = form.cleaned_data['password']
         self.room = get_object_or_404(Room, id = room_id)
-        self.room.save()
-        return super().form_valid(form)
+        stpassword = self.room.password or ""
+        if room_password == stpassword:
+            self.room.save()
+            return super().form_valid(form)
+        else:
+            return HttpResponseNotAllowed("bad password")
     
     def get_success_url(self):
         return reverse('room', kwargs={'pk':self.room.id} )
@@ -38,7 +42,7 @@ class RoomView(DetailView):
 class CreateRoomView(CreateView):
     template_name = "create.html"
     model = Room
-    fields = ["id","password"]
+    fields = ["id","password","video"]
 
     def form_valid(self, form, **kwargs):
         form.instance.host = self.request.user 

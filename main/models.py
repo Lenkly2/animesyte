@@ -8,3 +8,7 @@ class Room(models.Model):
     id = models.CharField(primary_key=True,max_length=90)
     password = models.CharField(null=True,blank=True)
     video = models.CharField(null=True,blank=True)
+
+class AnimeDB(models.Model):
+    name = models.CharField(primary_key=True)
+    link = models.CharField(null=True)
